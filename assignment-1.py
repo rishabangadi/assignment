@@ -1,9 +1,8 @@
-import datetime
 import requests
 import csv
 import argparse
 
-def fetch_listings(address, page_size, checkin_date, checkout_date, adults=2, currency="USD"):
+def fetch_listings(address, page_size):
     url = "https://www.vrbo.com/graphql"
 
     payload = {
@@ -12,7 +11,7 @@ def fetch_listings(address, page_size, checkin_date, checkout_date, adults=2, cu
                 "siteId": 9001001,
                 "locale": "en_US",
                 "eapid": 1,
-                "currency": currency,
+                "currency": "USD",
                 "device": {
                     "type": "DESKTOP"
                 },
@@ -31,15 +30,15 @@ def fetch_listings(address, page_size, checkin_date, checkout_date, adults=2, cu
                 "primary": {
                     "dateRange": {
                         "checkInDate": {
-                            "day": checkin_date.day,
-                            "month": checkin_date.month,
-                            "year": checkin_date.year
-                        },
+                        "day": 1,
+                        "month": 3,
+                        "year": 2024
+                    },
                         "checkOutDate": {
-                            "day": checkout_date.day,
-                            "month": checkout_date.month,
-                            "year": checkout_date.year
-                        }
+                            "day": 5,
+                            "month": 3,
+                            "year": 2024
+                    }
                     },
                     "destination": {
                         "regionName": address,
@@ -51,7 +50,7 @@ def fetch_listings(address, page_size, checkin_date, checkout_date, adults=2, cu
                     },
                     "rooms": [
                         {
-                            "adults": adults,
+                            "adults": 2,
                             "children": []
                         }
                     ]
@@ -154,17 +153,10 @@ def main():
     parser = argparse.ArgumentParser(description='Fetch listings from VRBO API and generate CSV file')
     parser.add_argument('address', type=str, help='Address of the place')
     parser.add_argument('page_size', type=int, help='Number of listings per page')
-    parser.add_argument('checkin_date', type=str, help='Check-in date (YYYY-MM-DD)')
-    parser.add_argument('checkout_date', type=str, help='Check-out date (YYYY-MM-DD)')
-    parser.add_argument('--adults', type=int, default=2, help='Number of adults')
-    parser.add_argument('--currency', type=str, default='USD', help='Currency for pricing')
     
     args = parser.parse_args()
-
-    checkin_date = datetime.datetime.strptime(args.checkin_date, '%Y-%m-%d').date()
-    checkout_date = datetime.datetime.strptime(args.checkout_date, '%Y-%m-%d').date()
-
-    response = fetch_listings(args.address, args.page_size, checkin_date, checkout_date, args.adults, args.currency)
+    
+    response = fetch_listings(args.address, args.page_size)
     listings = response['data']['propertySearch']['propertySearchListings']
     write_to_csv(listings, "listings.csv")
     print('CSV file listings.csv generated successfully.')
